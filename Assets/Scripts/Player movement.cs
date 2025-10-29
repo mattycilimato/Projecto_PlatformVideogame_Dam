@@ -15,15 +15,27 @@ public class Playermovement : MonoBehaviour
     public float maxFallSpeed = 10f;
       public float fallSpeedMultiplier = 2f;
 
-  [Header("Ground seting")]
+  [Header("Ground settings")]
     public Transform groundCheckTransform;
     public Vector2 groundCheckSize = new Vector2(0.5f, 0.1f);
 
-    public LayerMask groumdLayer;
+    public LayerMask groundLayer;
 
+
+    [Header("Wall settings")]
+    public Transform wallCheckTransform;
+    public Vector2 wallCheckSize = new Vector2(0.5f, 0.1f);
+
+    public LayerMask wallLayer;
+
+
+    [Header("SFX")]
+    public AudioClip SFXjump;
+    
     [Header("Componets")]
     public Animator playerAnimator;
     public SpriteRenderer playerRenderer;
+    public AudioSource audioSource;
 
 
     public void Update()
@@ -68,9 +80,11 @@ public class Playermovement : MonoBehaviour
     Rigidbody2D body;
     
     float horizantalMovement = 0;
+    float verticalMovment = 1/2;
+
 
     bool isGrounded = false;
-
+    bool isWalled = false;
   
     private void Awake()
     {
@@ -83,20 +97,33 @@ public class Playermovement : MonoBehaviour
     {
         body.linearVelocityX = horizantalMovement * playerSpeed;
         GroundCheck();  
+        SetGravity();   
     }
 
    
     public void GroundCheck()
     {
-       if( Physics2D.OverlapBox(groundCheckTransform.position, groundCheckSize, 0 , groumdLayer))
+       if( Physics2D.OverlapBox(groundCheckTransform.position, groundCheckSize, 0 , groundLayer))
         
             isGrounded = true;  
        else
             isGrounded = false;
         
     }
+
     
+
     
+    public void WallCheck()
+    {
+        if (Physics2D.OverlapBox(wallCheckTransform.position, wallCheckSize, 0, wallLayer))
+
+            isWalled = true;
+        else
+            isWalled = false;
+
+    }
+
     public void PlayerInput_Move(CallbackContext context)
     {
         horizantalMovement = context.ReadValue<Vector2>().x;
@@ -112,6 +139,8 @@ public class Playermovement : MonoBehaviour
             if (context.performed)
             {
                 body.linearVelocityY = JumpForce;
+                
+                audioSource.PlayOneShot(SFXjump);
             }
             
 
@@ -128,6 +157,7 @@ public class Playermovement : MonoBehaviour
     public void OnDrawGizmos()
     {
         Gizmos.DrawCube(groundCheckTransform.position, groundCheckSize);
+        Gizmos.DrawCube(wallCheckTransform.position, wallCheckSize);
     }
 
 
